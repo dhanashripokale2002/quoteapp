@@ -146,6 +146,7 @@ class _HomeTab extends StatelessWidget {
                       languageCode: lang,
                       index: index,
                       onTap: () {
+                        print("Category tapped");
                         Navigator.push(
                           context,
                           MaterialPageRoute(

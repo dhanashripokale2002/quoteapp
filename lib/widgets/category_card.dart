@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/category_model.dart';
 
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../models/category_model.dart';
+
 class CategoryCard extends StatefulWidget {
   final CategoryModel category;
   final String languageCode;
@@ -30,17 +34,20 @@ class _CategoryCardState extends State<CategoryCard>
   @override
   void initState() {
     super.initState();
+
     _controller = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 400 + (widget.index * 60)),
     );
+
     _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
     );
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeIn),
     );
-    // Staggered entry
+
     Future.delayed(Duration(milliseconds: widget.index * 60), () {
       if (mounted) _controller.forward();
     });
@@ -62,12 +69,10 @@ class _CategoryCardState extends State<CategoryCard>
       opacity: _fadeAnimation,
       child: ScaleTransition(
         scale: _scaleAnimation,
-        child: GestureDetector(
+        child: _CardContent(
+          category: widget.category,
+          name: name,
           onTap: widget.onTap,
-          child: _CardContent(
-            category: widget.category,
-            name: name,
-          ),
         ),
       ),
     );
@@ -77,7 +82,13 @@ class _CategoryCardState extends State<CategoryCard>
 class _CardContent extends StatefulWidget {
   final CategoryModel category;
   final String name;
-  const _CardContent({required this.category, required this.name});
+  final VoidCallback onTap;
+
+  const _CardContent({
+    required this.category,
+    required this.name,
+    required this.onTap,
+  });
 
   @override
   State<_CardContent> createState() => _CardContentState();
@@ -86,12 +97,25 @@ class _CardContent extends StatefulWidget {
 class _CardContentState extends State<_CardContent> {
   bool _pressed = false;
 
+  void _handleTapDown(_) {
+    setState(() => _pressed = true);
+  }
+
+  void _handleTapUp(_) {
+    setState(() => _pressed = false);
+  }
+
+  void _handleTapCancel() {
+    setState(() => _pressed = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) => setState(() => _pressed = false),
-      onTapCancel: () => setState(() => _pressed = false),
+      onTap: widget.onTap,
+      onTapDown: _handleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
       child: AnimatedScale(
         scale: _pressed ? 0.93 : 1.0,
         duration: const Duration(milliseconds: 150),
@@ -113,7 +137,6 @@ class _CardContentState extends State<_CardContent> {
           ),
           child: Stack(
             children: [
-              // Decorative circle
               Positioned(
                 top: -10,
                 right: -10,
@@ -138,7 +161,6 @@ class _CardContentState extends State<_CardContent> {
                   ),
                 ),
               ),
-              // Content
               Padding(
                 padding: const EdgeInsets.all(14),
                 child: Column(
